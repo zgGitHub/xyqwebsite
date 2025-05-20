@@ -34,16 +34,26 @@ class ChapterSerializer(DynamicFieldsModelSerializer):
         model = Chapter
         fields = ['id', 'title', 'video_url','is_free','order']
 
+    def validate(self, data):
+        request = self.context.get('request')
+        if request is None:
+            raise serializers.ValidationError("Request context is missing")
+        return data
+
     def to_representation(self, instance):
         """
         根据用户权限动态调整返回的字段
         """
         request = self.context.get('request')
+
+        # 获取user的安全方式
+        user = getattr(request, 'user', None) if request else None
+
         representation = super().to_representation(instance)
 
-        # 如果用户没有访问权限，移除敏感字段
-        if not self._has_access(request.user, instance):
-            representation.pop('video_url',None)
+        # 安全地检查访问权限
+        if not self._has_access(user, instance):
+            representation.pop('video_url', None)  # 安全地移除字段
 
         return representation
 
@@ -51,7 +61,7 @@ class ChapterSerializer(DynamicFieldsModelSerializer):
         """检查用户是否有权访问该内容"""
         if chapter.is_free:
             return True
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return False
 
         # 检查用户是否购买了关联课程

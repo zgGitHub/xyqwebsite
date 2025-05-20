@@ -58,7 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'xyq.middleware.security_logging.SecurityLoggingMiddleware'
+    'xyq.middleware.security_logging.SecurityLoggingMiddleware',
+    'xyq.middleware.middleware.ResponseFormatMiddleware'
 ]
 
 ROOT_URLCONF = 'xyq.urls'
@@ -122,6 +123,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',# 全局 JWT 认证
     ),
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',  # 默认要求认证
+    # ],
 }
 # Simple JWT 可选配置
 from datetime import timedelta
@@ -130,6 +134,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Refresh Token 有效期
     'ROTATE_REFRESH_TOKENS': True,                   # 刷新时生成新 Refresh Token
     'BLACKLIST_AFTER_ROTATION': True,                # 旧 Refresh Token 加入黑名单
+
+    # 'AUTH_HEADER_TYPES': ('Bearer',),  # 认证头类型
+    # 'USER_ID_FIELD': 'id',  # 用户模型ID字段
+    # 'USER_ID_CLAIM': 'user_id',  # JWT中的用户ID声明
+    # 'TOKEN_USER_CLASS':'users.models.User',
+    # 'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
 # Internationalization

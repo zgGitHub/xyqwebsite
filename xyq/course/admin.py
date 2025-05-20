@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from course.models import Course, Chapter, CourseCategory
+from course.models import Course, Chapter, CourseCategory, Order
 
 
 # Register your models here.
@@ -19,5 +19,10 @@ class CourseCategoryAdmin(admin.ModelAdmin):
     list_display = ('title','order')
     list_editable = ('order',)
 
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('user','course','order_date','payment_status')
 
-admin.site.register(Chapter)
+@admin.register(Chapter)
+class ChapterAdmin(admin.ModelAdmin):
+    list_display = ('title','course','is_free','video_url','order',)

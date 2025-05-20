@@ -73,4 +73,5 @@ class Order(models.Model):
 
     class Meta:
         verbose_name = '订单管理'
+        verbose_name_plural = verbose_name
         unique_together = ('user', 'course')

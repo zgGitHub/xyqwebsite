@@ -6,14 +6,38 @@ from rest_framework import status, serializers,mixins,permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
+from rest_framework import viewsets
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.exceptions import InvalidToken,TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from tutorial.quickstart.serializers import UserSerializer
-from .serializers import CustomTokenObtainPairSerializer
+from .serializers import UserSerializer,CustomTokenObtainPairSerializer
 from users.models import User
+
+'''
+viewsets.ViewSet ： 最基本的视图集，不提供任何默认动作
+
+viewsets.ModelViewSet : 完整实现了 CRUD操作的视图集
+    list() - GET /books/
+    create() - POST /books/
+    retrieve() - GET /books/1/
+    update() - PUT /books/1/
+    partial_update() - PATCH /books/1/
+    destroy() - DELETE /books/1/
+    
+viewsets.ReadOnlyModelViewSet :只提供读操作的视图集
+list() - GET /authors/
+retrieve() - GET /authors/1/
+
+viewsets.GenericViewSet :结合了通用视图和视图集的混合类，可以自由组合各种mixin
+mixins.CreateModelMixin,
+mixins.ListModelMixin,
+mixins.RetrieveModelMixin,
+viewsets.GenericViewSet
+
+
+'''
+
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -56,7 +80,7 @@ class RegisterView(APIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    # serializer_class = CustomTokenObtainPairSerializer
+    serializer_class = CustomTokenObtainPairSerializer
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -75,24 +99,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                                  "role": serializer.user.role,
                              }
                          }}, status=status.HTTP_200_OK)
-class UserView(GenericViewSet,mixins.RetrieveModelMixin):
-    queryset = User.objects.all()
+class UserViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
+    # queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    def upload_avatar(self, request, *args, **kwargs):
-        # 上传用户头像
-        avatar = request.data.get('avatar')
-        # 校验是否有上传文件
-        if not avatar:
-            return Response({'error':'上传失败，文件不能为空'},status=status.HTTP_400_BAD_REQUEST)
-        # 校验文件大小不能超过 300kb
-        if avatar.size > 1024*300:
-            return Response({'error':'文件大小不能超过 300kb'},status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        """
+        只返回当前 JWT Token 对应的用户数据
+        """
+        return User.objects.filter(id=self.request.user.id)
 
-        # 保存文件
-        user = self.get_object()
-        ser = self.get_serializer(user, data={'avatar': avatar},partial=True)
-        ser.is_valid(raise_exception=True)
-        ser.save()
-        return Response({'avatar':ser.data['avatar']}, status=status.HTTP_200_OK)
+

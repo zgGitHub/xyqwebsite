@@ -8,7 +8,7 @@
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt  # 解决跨域
 
-from .views import ChapterViewSet,course_list,course_detail
+from .views import course_list, course_detail,  ChapterListDetailView
 
 # 路由list
 urlpatterns = [
@@ -18,6 +18,6 @@ urlpatterns = [
     # login/urls.py 中给路由起别名，name="路由别名"
     path("list", csrf_exempt(course_list), name='course_list'),  # 第一个参数表示路径
     path("detail/<int:course_id>", csrf_exempt(course_detail), name='course_detail'),
-    path("chapter/<int:course_id>", ChapterViewSet.as_view({'get':'list'}), name='chapter_list'),
+    path("chapter/<int:pk>", ChapterListDetailView.as_view(), name='chapter_list'),
 ]
 
